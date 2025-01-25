@@ -91,9 +91,12 @@ void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context
     CHECK_ERR(err, "clCreateBuffer out");
 
     //@@ Copy memory to the GPU here
-
+    err = clEnqueueReadBuffer(cmd_queue, memobjs[1], CL_TRUE, 0, n*sizeof(cl_float), dst, 0, NULL, NULL);
+    
     //@@ define local and global work sizes
-    unsigned int size_a = 0; // @@ replace this with length of the input vector(s)
+    unsigned int size_a = n* sizeof(float); // @@ replace this with length of the input vector(s)
+    global_work_size[0] = n;
+    local_work_size[0] = n;
 
     // Set the arguments to the kernel
     err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &device_input_1);
@@ -106,11 +109,16 @@ void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context
     CHECK_ERR(err, "clSetKernelArg 3");
 
     //@@ Launch the GPU Kernel here
+    err = clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, global_work_size, NULL,0,NULL,NULL);
 
     //@@ Copy the GPU memory back to the CPU here
+    err = clEnqueueReadBuffer(cmd_queue, memobjs[1], CL_TRUE, 0, n*sizeof(cl_float), dst, 0, NULL, NULL);
 
     //@@ Free the GPU memory here
-
+    clReleaseMemObject(device_input_1);
+    clReleaseMemObject(device_input_2);
+    clReleaseMemObject(device_output);
+    
     // Release Host Memory
     free(kernel_source);
 }
@@ -140,6 +148,7 @@ void part1(Matrix* host_input_1, Matrix* host_input_2, Matrix* host_input_3, Mat
     SaveMatrix(output_file, host_output);
 
     //@@ Release OpenCL objects here
+    free(device_id.data, context.data, queue.data);
 }
 
 void callVectorAdd4Kernel(Matrix* a, Matrix* b, Matrix* c, Matrix* d, Matrix* out, cl_context* context, cl_command_queue* queue) {
@@ -206,9 +215,12 @@ void callVectorAdd4Kernel(Matrix* a, Matrix* b, Matrix* c, Matrix* d, Matrix* ou
     CHECK_ERR(err, "clCreateBuffer out");
 
     //@@ Copy memory to the GPU here
+    err = clEnqueueReadBuffer(cmd_queue, memobjs[1], CL_TRUE, 0, n*sizeof(cl_float), dst, 0, NULL, NULL);
 
     //@@ define local and global work sizes
-    unsigned int size_a = 0; // @@ replace this with length of the input vector(s)
+    unsigned int size_a = n* sizeof(float); // @@ replace this with length of the input vector(s)
+    global_work_size[0] = n;
+    local_work_size[0] = n;
 
     // Set the arguments to the kernel
     err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &device_input_1);
@@ -225,10 +237,17 @@ void callVectorAdd4Kernel(Matrix* a, Matrix* b, Matrix* c, Matrix* d, Matrix* ou
     CHECK_ERR(err, "clSetKernelArg 5");
 
     //@@ Launch the GPU Kernel here
-
+    err = clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, global_work_size, NULL,0,NULL,NULL);
+    
     //@@ Copy the GPU memory back to the CPU here
+    err = clEnqueueReadBuffer(cmd_queue, memobjs[1], CL_TRUE, 0, n*sizeof(cl_float), dst, 0, NULL, NULL);
 
     //@@ Free the GPU memory here
+    clReleaseMemObject(device_input_1);
+    clReleaseMemObject(device_input_2);
+    clReleaseMemObject(device_input_3);
+    clReleaseMemObject(device_input_4);
+    clReleaseMemObject(device_output);
 
     // Release Host Memory
     free(kernel_source);
@@ -257,6 +276,7 @@ void part2(Matrix* host_input_1, Matrix* host_input_2, Matrix* host_input_3, Mat
     SaveMatrix(output_file, host_output);
 
     //@@ Release OpenCL objects here
+    free(device_id.data, context.data, queue.data);
 }
 
 int main(int argc, char *argv[])
